@@ -3,10 +3,92 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
         xmlns:local="clr-namespace:DataCapture"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="DataCapture" Height="450" Width="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
 
+        <Grid Grid.Row="0">
+            <TextBlock FontSize="44" Margin="10">Data Capture</TextBlock>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Background="WhiteSmoke">
+                    <fa:IconBlock Name="uploadIcon" Icon="Upload" Foreground="ForestGreen"  FontSize="60"/>
+                    <TextBlock Visibility="Hidden" Name="uploadedZipName" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center">123456.zip</TextBlock>
+                </Grid>
+
+                <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+
+                        
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Button 
+                                FontSize="20" 
+                                Margin="10" Padding="10" 
+                                FontWeight="Bold" Foreground="White"
+                                Background="Blue" Name="uploadFileBtn"
+                                Click="uploadFileBtn_Click">Choose a zip file</Button>
+
+                            
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+
+                <ProgressBar Grid.Row="0" 
+                             Margin="20" Name="fileProcessingBar" Height="10"></ProgressBar>
+
+                
+                <Grid Grid.Row="1" Background="WhiteSmoke" Margin="20">
+                    
+                    <TextBlock Name="processFilesStatus" FontSize="20"
+                               HorizontalAlignment="Center" VerticalAlignment="Center">Found 30 Html files</TextBlock>
+                </Grid>
+
+                <Button Grid.Row="2"
+                    FontSize="20" 
+                    Margin="20" Padding="10" 
+                    FontWeight="Bold" Foreground="White"
+                    Background="Blue" Name="processingBtn"
+                    Click="processingBtn_Click">ProcessFiles</Button>
+
+
+                <Grid Grid.Row="3">
+                    <Button HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="20" Padding="10"
+                            Margin="10"
+                            Name="ViewHtmlFiles"
+                            Click="ViewHtmlFiles_Click">View HTML Files</Button>
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
