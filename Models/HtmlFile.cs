@@ -26,10 +26,25 @@ namespace DataCapture.Models
             }
         }
 
+        private bool _isExtractionCompleted;
+        public bool IsExtractionCompleted
+        {
+            get { return _isExtractionCompleted; }
+            set
+            {
+                _isExtractionCompleted = value;
+                OnPropertyChanged(nameof(IsExtractionCompleted));
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
+
+
     }
 }

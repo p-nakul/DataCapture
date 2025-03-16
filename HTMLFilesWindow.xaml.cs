@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace DataCapture
 {
@@ -23,12 +24,42 @@ namespace DataCapture
     /// </summary>
     public partial class HTMLFilesWindow : Window
     {
+        private BackgroundWorker _worker;
         public ObservableCollection<HtmlFile> _html_files { get; set; } = new ObservableCollection<HtmlFile>();
         public HTMLFilesWindow(List<HtmlFile> html_files)
         {
             InitializeComponent();
             _html_files = new ObservableCollection<HtmlFile>(html_files);
             DataContext = this;
+            _worker = new BackgroundWorker();
+            _worker.DoWork += _worker_DoWork;
+            _worker.RunWorkerCompleted += _worker_RunWorkerCompleted;
+            _worker.WorkerSupportsCancellation = true;
+          
+        }
+
+        private void _worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
+            MessageBox.Show($"Extraction completed");
+            //throw new NotImplementedException();
+        }
+
+        private void _worker_DoWork(object? sender, DoWorkEventArgs e)
+        {
+            List<HtmlFile> htmlFiles = e.Argument as List<HtmlFile>;
+
+            if (htmlFiles == null) { 
+                e.Cancel = true;
+                return;
+            }
+
+            foreach (HtmlFile htmlFile in htmlFiles) {
+                HtmlProcessor processor = HtmlProcessorFactory.GetProcessor(htmlFile.FilePath);
+                HtmlFile hf = processor.ExtractData(htmlFile);
+                hf.IsExtractionCompleted = true;
+            }
+
+
         }
 
         private void ViewFile(object sender, RoutedEventArgs e)
@@ -50,9 +81,16 @@ namespace DataCapture
         {
             if (sender is Button button && button.DataContext is HtmlFile file)
             {
-                HtmlProcessor processor = HtmlProcessorFactory.GetProcessor(file.FilePath);
-                HtmlFile hf = processor.ExtractData(file);
-                MessageBox.Show($"Extracting data from: {file.FileName}", "Extract File");
+                if (_worker.IsBusy)
+                {
+                    MessageBox.Show($"Busy in processing! Please wait.", "Extract File");
+                    return;
+                }
+
+                List<HtmlFile> htmlList = new List<HtmlFile>();
+                htmlList.Add(file);
+                _worker.RunWorkerAsync(htmlList);
+                
             }
         }
 
@@ -77,6 +115,14 @@ namespace DataCapture
             foreach (var file in selectedFiles)
             {
                 MessageBox.Show($"Extracting: {file.FileName}", "Extracting");
+            }
+        }
+
+        private void ViewExtracted_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is HtmlFile file)
+            {
+                HtmlFile htmlFile = file as HtmlFile;
             }
         }
     }
