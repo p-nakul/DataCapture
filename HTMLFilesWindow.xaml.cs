@@ -14,7 +14,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.ComponentModel;
 
 namespace DataCapture
@@ -25,6 +24,8 @@ namespace DataCapture
     public partial class HTMLFilesWindow : Window
     {
         private BackgroundWorker _worker;
+        private BackgroundWorker _excelWriter;
+        private bool isExportingEverything = false;
         public ObservableCollection<HtmlFile> _html_files { get; set; } = new ObservableCollection<HtmlFile>();
         public HTMLFilesWindow(List<HtmlFile> html_files)
         {
@@ -35,11 +36,55 @@ namespace DataCapture
             _worker.DoWork += _worker_DoWork;
             _worker.RunWorkerCompleted += _worker_RunWorkerCompleted;
             _worker.WorkerSupportsCancellation = true;
+
+            _excelWriter = new BackgroundWorker();
+            _excelWriter.DoWork += _excelWriter_DoWork;
+            _excelWriter.RunWorkerCompleted += _excelWriter_RunWorkerCompleted;
+            _excelWriter.WorkerSupportsCancellation = true;
+
+            exportEveryThing.IsEnabled = false;
           
+        }
+
+        private void _excelWriter_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
+            MessageBox.Show("File exported Successfully!");
+            try
+            {
+                Process.Start(new ProcessStartInfo(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx")) { UseShellExecute = true });
+            }
+            catch (Exception ex) { 
+            }
+
+        }
+
+        private void _excelWriter_DoWork(object? sender, DoWorkEventArgs e)
+        {
+            List<HtmlFile> htmlFiles = e.Argument as List<HtmlFile>;
+
+            if (htmlFiles == null)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            string excel_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx");
+            Excelhelper.CreateExcelFile(excel_path);
+            foreach (HtmlFile htmlFile in htmlFiles)
+            {
+                
+                Excelhelper.WriteDictionaryToExcel(excel_path, htmlFile.FileName, htmlFile.KeyValues);
+            }
+
         }
 
         private void _worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
+            if (isExportingEverything) {
+                exportEveryThing.IsEnabled = true;
+                isExportingEverything = false;
+            }
+
             MessageBox.Show($"Extraction completed");
             //throw new NotImplementedException();
         }
@@ -105,25 +150,37 @@ namespace DataCapture
 
         private void extractAllBtn_Click(object sender, RoutedEventArgs e)
         {
-            var selectedFiles = _html_files.Where(f => f.IsSelected).ToList();
+            List<HtmlFile> selectedFiles = _html_files.Where(f => f.IsSelected).ToList();
             if (selectedFiles.Count == 0)
             {
                 MessageBox.Show("No files selected!", "Warning");
                 return;
             }
 
-            foreach (var file in selectedFiles)
-            {
-                MessageBox.Show($"Extracting: {file.FileName}", "Extracting");
-            }
+            _worker.RunWorkerAsync(selectedFiles);
+            isExportingEverything = true;
+
+            
         }
 
+        // Export to excel
         private void ViewExtracted_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.DataContext is HtmlFile file)
             {
                 HtmlFile htmlFile = file as HtmlFile;
+                List<HtmlFile> htmlList = new List<HtmlFile>();
+                htmlList.Add(htmlFile);
+
+                _excelWriter.RunWorkerAsync(htmlList);
             }
+        }
+
+        private void exportEveryThing_Click(object sender, RoutedEventArgs e)
+        {
+            List<HtmlFile> selectedFiles = _html_files.Where(f => f.IsSelected).ToList();
+            _excelWriter.RunWorkerAsync(selectedFiles);
+
         }
     }
 }

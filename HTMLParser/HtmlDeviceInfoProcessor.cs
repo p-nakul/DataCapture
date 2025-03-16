@@ -55,11 +55,14 @@ namespace DataCapture.HTMLParser
                             if (!string.IsNullOrEmpty(text))
                             {
                                 string[] key_values = text.Split(':');
-                                if (!key_values[1].Trim().Equals(""))
+                                string value = key_values.Length > 1 ? string.Join(":", key_values, 1, key_values.Length - 1) : "";
+                                
+                                if (!value.Trim().Equals(""))
                                 {
                                     if (!excludedKeys.Contains(key_values[0]))
                                     {
-                                        keyValues[key_values[0]] = key_values[1];
+                                        
+                                        keyValues[key_values[0]] = value;
                                     }
                                 }
 

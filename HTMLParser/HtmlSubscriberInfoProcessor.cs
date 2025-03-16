@@ -44,10 +44,10 @@ namespace DataCapture.HTMLParser
                                 {
                                     string[] key_values = li.InnerText.Trim().Split(':');
 
-                                    
+                                    string value = key_values.Length > 1 ? string.Join(":", key_values, 1, key_values.Length - 1) : "";
 
-                                    if (!key_values[1].Trim().Equals(""))
-                                        keyValues[key_values[0]] = key_values[1];
+                                    if (!value.Trim().Equals(""))
+                                        keyValues[key_values[0]] = value;
                                 }
 
                             }
