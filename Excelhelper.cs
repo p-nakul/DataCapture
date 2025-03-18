@@ -92,7 +92,7 @@ namespace DataCapture
             using (var workbook = new XLWorkbook(filePath))
             {
                 sheetName = SanitizeSheetName(sheetName);
-                sheetName = GetUniqueSheetName(workbook, sheetName);
+                //sheetName = GetUniqueSheetName(workbook, sheetName);
                 // Check if the sheet already exists; if not, create it
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == sheetName)
                                 ?? workbook.Worksheets.Add(sheetName);

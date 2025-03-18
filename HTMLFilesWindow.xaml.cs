@@ -70,12 +70,30 @@ namespace DataCapture
 
             string excel_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx");
             Excelhelper.CreateExcelFile(excel_path);
-            foreach (HtmlFile htmlFile in htmlFiles)
-            {
-                
-                Excelhelper.WriteDictionaryToExcel(excel_path, htmlFile.FileName, htmlFile.KeyValues);
-            }
 
+            // for single file
+            if (htmlFiles.Count == 1) {
+                foreach (HtmlFile htmlFile in htmlFiles)
+                {
+                    Excelhelper.WriteDictionaryToExcel(excel_path, htmlFile.FileName, htmlFile.KeyValues);
+                }
+            }
+            // make consolidated 
+            else
+            {
+                Dictionary<string, string> consolidated = new Dictionary<string, string>();
+                foreach (HtmlFile htmlFile in htmlFiles)
+                {
+                    foreach(string key in htmlFile.KeyValues.Keys)
+                    {
+                        if (!consolidated.ContainsKey(key)) {
+                            consolidated[key] = htmlFile.KeyValues[key];
+                        }
+                    }
+                }
+
+                Excelhelper.WriteDictionaryToExcel(excel_path, "consolidated", consolidated);
+            }
         }
 
         private void _worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
