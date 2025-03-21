@@ -48,12 +48,20 @@ namespace DataCapture
 
         private void _excelWriter_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
-            MessageBox.Show("File exported Successfully!");
+
+            if(e.Result != null && (int)e.Result == -1)
+            {
+                MessageBox.Show("Close the file before exporting data.");
+                return;
+            }
+
+            MessageBox.Show($"File exported Successfully! Opening file, please wait. File path: {System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx")}");
             try
             {
                 Process.Start(new ProcessStartInfo(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx")) { UseShellExecute = true });
             }
             catch (Exception ex) { 
+                MessageBox.Show($"File created but unable to open file! File path: {System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx")}");
             }
 
         }
@@ -69,31 +77,75 @@ namespace DataCapture
             }
 
             string excel_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "data_capture.xlsx");
-            Excelhelper.CreateExcelFile(excel_path);
+
+            try
+            {
+                Excelhelper.CreateExcelFile(excel_path);
+            }
+            catch (Exception ex) {
+                e.Result = -1;
+                return;
+            }
+            
 
             // for single file
             if (htmlFiles.Count == 1) {
                 foreach (HtmlFile htmlFile in htmlFiles)
                 {
                     Excelhelper.WriteDictionaryToExcel(excel_path, htmlFile.FileName, htmlFile.KeyValues);
+                    Excelhelper.WriteHtmlSectionsToExcel(excel_path, htmlFile.FileName, htmlFile.Sections);
                 }
             }
             // make consolidated 
             else
             {
                 Dictionary<string, string> consolidated = new Dictionary<string, string>();
+                List<HtmlSection> consolidatedSections = new List<HtmlSection>();
+
                 foreach (HtmlFile htmlFile in htmlFiles)
                 {
-                    foreach(string key in htmlFile.KeyValues.Keys)
+                    // Consolidate Key-Value Pairs (No Duplicates)
+                    foreach (string key in htmlFile.KeyValues.Keys)
                     {
-                        if (!consolidated.ContainsKey(key)) {
+                        if (!consolidated.ContainsKey(key))
+                        {
                             consolidated[key] = htmlFile.KeyValues[key];
+                        }
+                    }
+
+                    // Consolidate HTML Sections (Avoid Duplicates)
+                    foreach (var section in htmlFile.Sections)
+                    {
+                        if (!consolidatedSections.Any(s => AreSectionsEqual(s, section)))
+                        {
+                            consolidatedSections.Add(section);
                         }
                     }
                 }
 
+                // Write Key-Value Data
                 Excelhelper.WriteDictionaryToExcel(excel_path, "consolidated", consolidated);
+
+                // Write HTML Sections Data
+                Excelhelper.WriteHtmlSectionsToExcel(excel_path, "consolidated", consolidatedSections);
             }
+        }
+
+        private static bool AreSectionsEqual(HtmlSection section1, HtmlSection section2)
+        {
+            if (section1.Header != section2.Header) return false;
+
+            if (section1.Table.Count != section2.Table.Count) return false;
+
+            for (int i = 0; i < section1.Table.Count; i++)
+            {
+                if (!section1.Table[i].SequenceEqual(section2.Table[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void _worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)

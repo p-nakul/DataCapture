@@ -36,6 +36,7 @@ namespace DataCapture
             _worker.WorkerReportsProgress = true;
             _worker.WorkerSupportsCancellation = true;
             processFilesStatus.Text = "";
+            ViewHtmlFiles.IsEnabled = false;
         }
 
         private void Worker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
@@ -71,7 +72,7 @@ namespace DataCapture
 
         private void Worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
-            
+            ViewHtmlFiles.IsEnabled = true;
         }
 
         private void Worker_DoWork(object? sender, DoWorkEventArgs e)
@@ -117,6 +118,7 @@ namespace DataCapture
                 uploadedZipName.Visibility = Visibility.Visible;
                 processingBtn.IsEnabled = true;
                 _selected_zip_file = fileDialog.FileName;
+                ViewHtmlFiles.IsEnabled = false;
             }
             else
             {

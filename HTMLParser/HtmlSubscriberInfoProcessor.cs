@@ -18,6 +18,7 @@ namespace DataCapture.HTMLParser
             // extract first section
             //var h2Node = doc.DocumentNode.SelectSingleNode("//h2");
             hf.KeyValues = extractDivSections();
+            hf.Sections = extractHtmlSections();
 
             return hf;
         }
@@ -65,6 +66,52 @@ namespace DataCapture.HTMLParser
             {
                 return keyValues;
             }
+        }
+
+
+        private List<HtmlSection> extractHtmlSections()
+        {
+            var sections = new List<HtmlSection>();
+            var nodes = Document.DocumentNode.SelectNodes("//h3 | //table | //text()") ?? new HtmlNodeCollection(null);
+
+            HtmlSection currentSection = null;
+
+            foreach (var node in nodes)
+            {
+                if (node.Name == "h3")
+                {
+                    if (currentSection != null) sections.Add(currentSection);
+                    currentSection = new HtmlSection { Header = node.InnerText.Trim() };
+                }
+                else if (node.Name == "table" && currentSection != null)
+                {
+                    currentSection.Table = ExtractTable(node);
+                }
+                else if (node.NodeType == HtmlNodeType.Text && currentSection != null)
+                {
+                    string text = node.InnerText.Trim();
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        currentSection.TextContent += (currentSection.TextContent.Length > 0 ? " " : "") + text;
+                    }
+                }
+            }
+
+            if (currentSection != null) sections.Add(currentSection);
+            
+            return sections;
+        }
+
+
+        private static List<List<string>> ExtractTable(HtmlNode tableNode)
+        {
+            var table = new List<List<string>>();
+            foreach (var row in tableNode.SelectNodes(".//tr") ?? new HtmlNodeCollection(null))
+            {
+                var rowData = row.SelectNodes(".//th | .//td")?.Select(cell => cell.InnerText.Trim()).ToList() ?? new List<string>();
+                table.Add(rowData);
+            }
+            return table;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using DataCapture.Models;
 
 namespace DataCapture
 {
@@ -53,29 +54,7 @@ namespace DataCapture
             return sheetName;
         }
 
-        /// <summary>
-        /// Writes a list of values to an Excel sheet.
-        /// </summary>
-        public static void WriteListToExcel(string filePath, string sheetName, List<string> data)
-        {
-            sheetName = SanitizeSheetName(sheetName);
-            if (!File.Exists(filePath))
-            {
-                CreateExcelFile(filePath);
-            }
-
-            using (var workbook = new XLWorkbook(filePath))
-            {
-                var worksheet = workbook.Worksheets.Worksheet(sheetName);
-
-                for (int i = 0; i < data.Count; i++)
-                {
-                    worksheet.Cell(i + 1, 1).Value = data[i];
-                }
-
-                workbook.Save();
-            }
-        }
+        
 
         /// <summary>
         /// Writes a dictionary (key-value pairs) to an Excel sheet.
@@ -97,7 +76,7 @@ namespace DataCapture
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == sheetName)
                                 ?? workbook.Worksheets.Add(sheetName);
 
-                int row = 1;
+                int row = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
 
                 foreach (var pair in data)
                 {
@@ -108,6 +87,64 @@ namespace DataCapture
 
                 workbook.Save();
             }
+        }
+
+
+        public static void WriteHtmlSectionsToExcel(string filePath, string sheetName, List<HtmlSection> sections)
+        {
+            sheetName = SanitizeSheetName(sheetName);
+
+            if (!File.Exists(filePath))
+            {
+                CreateExcelFile(filePath);
+            }
+
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                sheetName = SanitizeSheetName(sheetName);
+                var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == sheetName)
+                                ?? workbook.Worksheets.Add(sheetName);
+
+                int row = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
+
+                foreach (var section in sections)
+                {
+                    // Write H3 header
+                    worksheet.Cell(row, 1).Value = section.Header;
+                    int mergeColumns = section.Table.FirstOrDefault()?.Count ?? 1;
+                    if (mergeColumns > 1)
+                    {
+                        worksheet.Range(row, 1, row, mergeColumns).Merge();
+                    }
+                    worksheet.Cell(row, 1).Style.Font.Bold = true;
+                    row++;
+
+                    // Write text content (if exists)
+                    if (!string.IsNullOrWhiteSpace(section.TextContent))
+                    {
+                        worksheet.Cell(row, 1).Value = section.TextContent;
+                        worksheet.Range(row, 1, row, mergeColumns).Merge();
+                        worksheet.Cell(row, 1).Style.Font.Italic = true;
+                        row++;
+                    }
+
+                    // Write table rows
+                    foreach (var tableRow in section.Table)
+                    {
+                        for (int col = 0; col < tableRow.Count; col++)
+                        {
+                            worksheet.Cell(row, col + 1).Value = tableRow[col];
+                        }
+                        row++;
+                    }
+
+                    row++; // Add empty row between sections
+                }
+
+                workbook.Save();
+            }
+
+
         }
     }
 }

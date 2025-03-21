@@ -16,7 +16,7 @@
         <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="0" VerticalAlignment="Center">
             <CheckBox x:Name="SelectAllCheckBox" Content="Select All" VerticalAlignment="Center" Click="SelectAllChecked"/>
             <Button Margin="20,0,0,0" VerticalAlignment="Center" Name="extractAllBtn" Click="extractAllBtn_Click">Extract all</Button>
-            <Button Margin="20,0,0,0" VerticalAlignment="Center" IsEnabled="False" Name="exportEveryThing" Click="exportEveryThing_Click">Export everything</Button>
+            <Button Margin="20,0,0,0" VerticalAlignment="Center" IsEnabled="False" Name="exportEveryThing" Click="exportEveryThing_Click">Export and Open Excel</Button>
         </StackPanel>
 
         <DataGrid  CanUserAddRows="False" Grid.Row="1" ItemsSource="{Binding _html_files}" AutoGenerateColumns="False" Margin="0,0,0,0">
@@ -38,11 +38,11 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="View" Click="ViewFile" Margin="2"/>
-                                <Button Content="Extract" Click="ExtractFile" Margin="2"/>
+                                <Button Content="View html file" Click="ViewFile" Margin="2"/>
+                                <Button Content="Extract data" Click="ExtractFile" Margin="2"/>
 
 
-                                <Button Content="Export Extracted Contents" Click="ViewExtracted_Click"
+                                <Button Content="Export and open excel" Click="ViewExtracted_Click"
                                     Name="ViewExtracted" Margin="2"
                                     IsEnabled="{Binding IsExtractionCompleted}" />      
                             </StackPanel>

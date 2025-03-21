@@ -13,8 +13,9 @@ namespace DataCapture.Models
         public string FilePath { get; set; }
 
         public Dictionary<string, string> KeyValues { get; set; } = new();
-        public List<List<string>> TableData { get; set; } = new();
 
+        public List<HtmlSection> Sections { get; set; } = new();
+        
         private bool _isSelected;
         public bool IsSelected
         {
@@ -42,9 +43,12 @@ namespace DataCapture.Models
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
 
-
-
-
+    public class HtmlSection
+    {
+        public string Header { get; set; } = string.Empty;
+        public string TextContent { get; set; } = "";  // Stores any text between h3 and table
+        public List<List<string>> Table { get; set; } = new(); // Each table is a list of rows (List of List)
     }
 }

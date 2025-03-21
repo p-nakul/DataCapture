@@ -77,7 +77,7 @@
                     Margin="20" Padding="10" 
                     FontWeight="Bold" Foreground="White"
                     Background="Blue" Name="processingBtn"
-                    Click="processingBtn_Click">ProcessFiles</Button>
+                    Click="processingBtn_Click">Extract files</Button>
 
 
                 <Grid Grid.Row="3">
@@ -86,6 +86,7 @@
                             FontSize="20" Padding="10"
                             Margin="10"
                             Name="ViewHtmlFiles"
+                            IsEnabled="False"
                             Click="ViewHtmlFiles_Click">View HTML Files</Button>
                 </Grid>
             </Grid>
